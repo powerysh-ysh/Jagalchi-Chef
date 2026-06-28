@@ -130,7 +130,7 @@ export default function Marketplace() {
           <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>소개</span>
           <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>브랜드 전시관</span>
           <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>프로그램</span>
-          <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>커뮤니티</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => router.push('/community')}>커뮤니티</span>
         </div>
         <div className="flex gap-4 items-center">
           {/* 어드민 대시보드 바로가기 버튼 */}

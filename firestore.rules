@@ -67,5 +67,20 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if false;
     }
+    
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isAdmin();
+    }
+    
+    match /inquiries/{inquiryId} {
+      // 본인 문의글이거나 관리자만 열람 가능
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      // 생성은 본인 이름으로만
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // 수정(답변 달기, 상태 변경)은 관리자만 가능
+      allow update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
+    }
   }
 }
