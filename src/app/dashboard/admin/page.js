@@ -25,6 +25,27 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSeedData = async () => {
+    if (!db) return;
+    try {
+      const seedItems = [
+        { name: "자연산 참돔 세트 (Wild Red Sea Bream Set)", category: "General", stock: true, tags: ["할랄", "부드러운 맛"] },
+        { name: "산낙지 탕탕이 (Live Octopus Sashimi)", category: "General", stock: true, tags: ["이색체험", "날해산물"] },
+        { name: "프리미엄 전복죽 (Premium Abalone Porridge)", category: "General", stock: true, tags: ["글루텐프리", "건강식"] }
+      ];
+      for (const item of seedItems) {
+        await addDoc(collection(db, 'ingredients'), {
+          ...item,
+          createdAt: serverTimestamp()
+        });
+      }
+      alert('더미 데이터 3종이 성공적으로 등록되었습니다!');
+    } catch (err) {
+      console.error(err);
+      alert('데이터 채우기 실패');
+    }
+  };
+
   useEffect(() => {
     if (!db) return;
     const unsubscribe = onSnapshot(collection(db, 'ingredients'), (snapshot) => {
@@ -94,6 +115,16 @@ export default function AdminDashboard() {
           <span style={{ fontWeight: 600 }}>동기화 상태:</span>
           <div className="traffic-dot active-green"></div>
           <span>클라우드 DB 활성화</span>
+          
+          <button 
+            onClick={handleSeedData}
+            style={{
+              backgroundColor: '#4caf50', color: 'white', border: 'none', 
+              padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '1rem'
+            }}
+          >
+            🌱 더미 데이터 채우기
+          </button>
           
           <button 
             onClick={handleLogout}
