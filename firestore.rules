@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. 공통 함수: 인증 및 역할 확인
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(userId) { return request.auth.uid == userId; }
+    
+    function getUserRole() {
+      // 보안을 위해 users 컬렉션에서 역할을 가져옵니다.
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isChef() { return getUserRole() == 'chef'; }
+    function isMerchant() { return getUserRole() == 'merchant'; }
+    function isTourist() { return getUserRole() == 'tourist'; }
+    function isAdmin() { return getUserRole() == 'admin'; }
+
+    // 2. 예약 상태 머신 검증 함수 (안티그래비티 원칙)
+    function isValidStateTransition(oldState, newState) {
+      return (oldState == 'pending' && (newState == 'chef_assigned' || newState == 'cancelled')) || 
+             (oldState == 'chef_assigned' && (newState == 'confirmed' || newState == 'cancelled')) ||
+             (oldState == 'confirmed' && (newState == 'completed' || newState == 'cancelled'));
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /user_devices/{deviceId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /reservations/{reservationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.touristId == request.auth.uid || 
+        isChef() || 
+        isMerchant()
+      );
+      
+      // 예약 생성 시 상태는 무조건 'cart' 또는 'chef_assigned' 시작이어야 함
+      allow create: if isAuthenticated() && 
+                    request.resource.data.touristId == request.auth.uid &&
+                    (request.resource.data.status == 'cart' || request.resource.data.status == 'chef_assigned');
+      
+      // 예약 업데이트 시 상태 전이 검증 및 결제 금액(amount) 변조 방지 로직 포함
+      allow update: if isAuthenticated() && 
+                    (resource.data.touristId == request.auth.uid || isChef() || isMerchant()) &&
+                    isValidStateTransition(resource.data.status, request.resource.data.status) &&
+                    (request.resource.data.amount == resource.data.amount); // 금액 임의 수정 원천 차단
+    }
+
+    match /experienceLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.touristId == request.auth.uid;
+      allow update, delete: if false; // 리뷰 수정/삭제 방지
+    }
+    
+    match /ingredients/{ingredientId} {
+      allow read: if true; // 마켓플레이스에서 누구나 볼 수 있음
+      allow write: if isAuthenticated() && (isMerchant() || isAdmin());
+    }
+    
+    match /ingredientTrends/{trendId} {
+      // 통계 데이터는 읽기 전용 캐시로 운용
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+  }
+}
