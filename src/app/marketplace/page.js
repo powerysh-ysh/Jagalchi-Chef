@@ -150,6 +150,21 @@ export default function Marketplace() {
             🌐 {lang === 'ko' ? 'KO' : 'EN'}
           </button>
           
+          {/* 로그인한 유저 정보 표시 */}
+          {user && (
+            <div className="hidden lg:flex items-center gap-2 bg-[#005f8a] px-4 py-2 rounded-full shadow-inner border border-[#004e73]">
+              <span className="text-lg">
+                {role === 'merchant' ? '🏪' : role === 'chef' ? '👨‍🍳' : '🎒'}
+              </span>
+              <span className="font-bold text-sm">
+                {user.email?.split('@')[0]} 님 
+                <span className="text-yellow-300 ml-1">
+                  ({role === 'merchant' ? '상인' : role === 'chef' ? '셰프' : '여행객'})
+                </span>
+              </span>
+            </div>
+          )}
+          
           {/* Auth Button */}
           {!loading && (
             <button 
