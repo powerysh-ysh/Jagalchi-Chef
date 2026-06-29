@@ -18,6 +18,11 @@ export default function AdminDashboard() {
 
   const [newItemName, setNewItemName] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
+  const [activeTab, setActiveTab] = useState('optionB'); // optionA or optionB
+
+  // 승인(Confirm) 모달 상태
+  const [confirmModalData, setConfirmModalData] = useState(null); 
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -123,30 +128,81 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleAddItem = async (e) => {
+  const handleOptionASubmit = async (e) => {
     e.preventDefault();
     if (!newItemName) return;
 
     setIsTranslating(true);
     try {
-      // Server Action을 호출하여 번역 및 태그 결과 받아오기
-      const { translatedText, tags } = await translateAndTag(newItemName);
+      const { translatedText, tags, imageUrl } = await translateAndTag(newItemName);
+      
+      // DB 직행이 아니라 Confirm 모달 띄우기
+      setConfirmModalData([{
+        name: `${newItemName} (${translatedText})`,
+        category: 'General',
+        stock: true,
+        tags: tags || [],
+        imageUrl: imageUrl || ''
+      }]);
 
-      if (db) {
+    } catch (error) {
+      alert("AI 매칭 중 오류가 발생했습니다.");
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleMenuScan = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('menuImage', file);
+
+      const res = await fetch('/api/scan-menu', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.success && data.items) {
+        // DB 직행이 아니라 Confirm 모달 띄우기
+        setConfirmModalData(data.items);
+      } else {
+        alert(data.error || "메뉴 스캔 실패");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("스캔 중 오류 발생");
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = ''; // input 초기화
+    }
+  };
+
+  const confirmAndSave = async () => {
+    if (!db || !confirmModalData) return;
+    try {
+      for (const item of confirmModalData) {
+        // id 등 불필요 필드 제거 후 DB 저장
+        const { id, englishName, ...saveData } = item;
+        // mock 데이터 포맷 보정
+        if (englishName && item.name.indexOf('(') === -1) {
+          saveData.name = `${item.name} (${englishName})`;
+        }
         await addDoc(collection(db, 'ingredients'), {
-          name: `${newItemName} (${translatedText})`,
-          category: 'General',
-          stock: true,
-          tags: tags,
+          ...saveData,
           createdAt: serverTimestamp()
         });
       }
-
+      alert(`성공적으로 ${confirmModalData.length}개의 메뉴가 등록되었습니다!`);
+      setConfirmModalData(null);
       setNewItemName('');
     } catch (error) {
-      alert("번역 처리 중 오류가 발생했습니다.");
-    } finally {
-      setIsTranslating(false);
+      console.error(error);
+      alert("저장 중 오류 발생");
     }
   };
 
@@ -210,31 +266,126 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* 상품 등록 영역 */}
-      <div className="widget-card animate-fade-in" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ marginBottom: '1rem', color: 'var(--foreground-color)' }}>새로운 식재료 등록</h2>
-        <form onSubmit={handleAddItem} style={{ display: 'flex', gap: '1rem' }}>
-          <input 
-            type="text" 
-            placeholder="상품명 입력 (예: 자연산 광어)" 
-            value={newItemName}
-            onChange={(e) => setNewItemName(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              fontSize: '1rem'
-            }}
-          />
-          <button type="submit" className="btn-primary" disabled={isTranslating} style={{ minWidth: '150px' }}>
-            {isTranslating ? '번역 중...' : '상품 등록'}
-          </button>
-        </form>
-        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
-          * 한국어로 입력하시면 Cloud Functions를 통해 다국어 태그가 자동으로 매핑됩니다.
-        </p>
+      {/* 초자동화 등록 탭 */}
+      <div className="flex gap-4 mb-6">
+        <button 
+          onClick={() => setActiveTab('optionB')}
+          className={`flex-1 py-3 font-bold rounded-t-xl transition-all ${activeTab === 'optionB' ? 'bg-[#ff5722] text-white shadow-md' : 'bg-gray-200 text-gray-500'}`}
+        >
+          📸 메뉴판 통째로 스캔 (옵션 B) <span className="text-xs ml-1 text-yellow-300">추천!</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('optionA')}
+          className={`flex-1 py-3 font-bold rounded-t-xl transition-all ${activeTab === 'optionA' ? 'bg-[#007db5] text-white shadow-md' : 'bg-gray-200 text-gray-500'}`}
+        >
+          ✏️ 단건 자동 매칭 (옵션 A)
+        </button>
       </div>
+
+      <div className="widget-card animate-fade-in" style={{ marginBottom: '2rem', borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+        
+        {activeTab === 'optionB' && (
+          <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+            <div className="text-6xl mb-4">📸</div>
+            <h2 className="text-2xl font-black text-gray-800 mb-2">메뉴판 통째로 1초 만에 올리기</h2>
+            <p className="text-gray-600 mb-6 text-center">가게 메뉴판이나 화이트보드 사진을 찰칵 찍어서 올려주세요.<br/>AI가 메뉴 이름, 영어 번역, 맞춤 해산물 사진까지 알아서 다~ 세팅해 드립니다!</p>
+            
+            <label className="bg-[#ff5722] text-white px-8 py-4 rounded-full font-bold cursor-pointer hover:bg-orange-600 transition-transform hover:scale-105 shadow-md flex items-center gap-2">
+              {isUploadingImage ? (
+                <span>⏳ AI가 메뉴판을 분석 중입니다...</span>
+              ) : (
+                <>
+                  <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m14-7-5-5-5 5m5-5v12"/></svg>
+                  <span>메뉴판 사진 업로드 (스마트폰 촬영)</span>
+                </>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={handleMenuScan} disabled={isUploadingImage} />
+            </label>
+            
+            <div className="mt-4 relative group cursor-pointer">
+              <span className="text-sm text-gray-500 underline decoration-dotted">💡 이미지 가이드라인 및 무료 정책 보기</span>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 bg-gray-800 text-white text-xs p-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                - Unsplash의 고품질 저작권 무료 이미지가 자동 매칭됩니다.<br/>
+                - Vercel 환경 변수로 보호되는 샌드박스 AI가 처리하므로 추가 비용이 발생하지 않습니다.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'optionA' && (
+          <div>
+            <h2 style={{ marginBottom: '1rem', color: 'var(--foreground-color)' }}>식재료 이름 입력 (AI가 나머지 완성)</h2>
+            <form onSubmit={handleOptionASubmit} style={{ display: 'flex', gap: '1rem' }}>
+              <input 
+                type="text" 
+                placeholder="예: 산낙지 탕탕이 (엔터치면 사진까지 싹 찾아줍니다!)" 
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                style={{ flex: 1, padding: '15px', borderRadius: '8px', border: '2px solid var(--border-color)', fontSize: '1.1rem' }}
+              />
+              <button type="submit" className="bg-[#007db5] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#005f8a] transition-colors" disabled={isTranslating}>
+                {isTranslating ? '⏳ AI 찾는 중...' : '자동 생성'}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* 승인(Confirm) 팝업 모달 */}
+      {confirmModalData && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto p-8 shadow-2xl animate-fade-in">
+            <h2 className="text-3xl font-black text-gray-900 mb-2">✨ AI 초자동화 분석 결과</h2>
+            <p className="text-red-500 font-bold mb-6">등록하시겠습니까? (불필요한 과금을 막기 위해 상인의 최종 승인이 필요합니다)</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {confirmModalData.map((item, idx) => (
+                <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm relative">
+                  <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-gray-400">이미지 없음</span>
+                    )}
+                  </div>
+                  <div className="p-4 bg-white">
+                    <h3 className="font-bold text-lg mb-1">{item.name}</h3>
+                    {item.englishName && <p className="text-sm text-gray-500 mb-2">{item.englishName}</p>}
+                    <div className="flex flex-wrap gap-1">
+                      {(item.tags || []).map(tag => (
+                        <span key={tag} className="bg-blue-50 text-[#007db5] px-2 py-0.5 rounded text-xs font-bold border border-blue-100">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setConfirmModalData(confirmModalData.filter((_, i) => i !== idx))}
+                    className="absolute top-2 right-2 bg-white text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-md font-bold hover:bg-red-50"
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setConfirmModalData(null)}
+                className="flex-1 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                취소 (DB 저장 안 함)
+              </button>
+              <button 
+                onClick={confirmAndSave}
+                className="flex-[2] py-4 bg-[#ff5722] text-white font-black rounded-xl hover:bg-orange-600 transition-colors shadow-lg text-lg"
+              >
+                👍 {confirmModalData.length}개 메뉴 완벽합니다! 최종 등록하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 실시간 재고 관리 영역 */}
       <div className="widget-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -244,9 +395,9 @@ export default function AdminDashboard() {
             <div key={item.id} className="order-item" style={{ opacity: item.stock ? 1 : 0.6 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '0.3rem' }}>{item.name}</div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <span style={{ color: 'var(--primary-color)', fontSize: '0.85rem', fontWeight: 600 }}>{item.category}</span>
-                  {item.tags.map(tag => (
+                  {(item.tags || []).map(tag => (
                     <span key={tag} style={{ backgroundColor: '#eee', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', color: '#555' }}>
                       #{tag}
                     </span>
