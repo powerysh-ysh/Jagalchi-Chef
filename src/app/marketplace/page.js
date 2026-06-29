@@ -6,8 +6,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { db } from '@/lib/db';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firestore';
 import '../globals.css';
+
+const ALL_TAGS = ['할랄', '부드러운 맛', '이색체험', '날해산물', '글루텐프리', '건강식', '매운맛', '전통체험'];
 
 const data = {
   ko: {
@@ -89,24 +91,74 @@ export default function Marketplace() {
   const [lang, setLang] = useState('ko');
   const { user, role, loading } = useAuth();
   const [ingredients, setIngredients] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [userPreferencesLoaded, setUserPreferencesLoaded] = useState(false);
 
+  // 유저의 기존 취향(Preferences) 불러오기
+  useEffect(() => {
+    if (!user || !db) return;
+    const loadPreferences = async () => {
+      try {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().preferences) {
+          setSelectedTags(userDoc.data().preferences);
+        }
+      } catch (err) {
+        console.error("Preferences load error:", err);
+      } finally {
+        setUserPreferencesLoaded(true);
+      }
+    };
+    loadPreferences();
+  }, [user]);
+
+  // 상품 목록 불러오기 및 가중치 매칭(Weight-based Matching) 정렬
   useEffect(() => {
     if (!db) return;
-    // 인덱스 에러 방지를 위해 orderBy 제거 후 클라이언트 단에서 JS 정렬
     const unsubscribe = onSnapshot(collection(db, 'ingredients'), (snapshot) => {
       const items = [];
       snapshot.forEach((doc) => {
-        // 품절되지 않은 상품만 표시
         if (doc.data().stock !== false) {
           items.push({ id: doc.id, ...doc.data() });
         }
       });
-      // createdAt 기준으로 내림차순 정렬 (JS 로컬 정렬)
-      items.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+      
+      // 안티그래비티 린 알고리즘: 태그 일치도 기반 정렬
+      items.sort((a, b) => {
+        if (selectedTags.length > 0) {
+          const aScore = (a.tags || []).filter(t => selectedTags.includes(t)).length;
+          const bScore = (b.tags || []).filter(t => selectedTags.includes(t)).length;
+          if (aScore !== bScore) {
+            return bScore - aScore; // 점수가 높은 순(내림차순)
+          }
+        }
+        // 점수가 같거나 선택된 태그가 없으면 최신순
+        return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+      });
+      
       setIngredients(items);
     });
     return () => unsubscribe();
-  }, []);
+  }, [selectedTags]); // selectedTags가 바뀔 때마다 재정렬
+
+  const toggleTag = async (tag) => {
+    const newTags = selectedTags.includes(tag) 
+      ? selectedTags.filter(t => t !== tag) 
+      : [...selectedTags, tag];
+      
+    setSelectedTags(newTags);
+
+    // 유저 프로필에 취향 업데이트
+    if (user && db) {
+      try {
+        await updateDoc(doc(db, 'users', user.uid), {
+          preferences: newTags
+        });
+      } catch (err) {
+        console.error("Preferences update error:", err);
+      }
+    }
+  };
 
   const content = data[lang];
   const toggleLang = () => setLang(l => l === 'ko' ? 'en' : 'ko');
@@ -200,8 +252,32 @@ export default function Marketplace() {
         <span className="cursor-pointer">{content.nav2} ▾</span>
       </div>
 
-      {/* 4. Content List (카드형 레이아웃) */}
-      <div className="max-w-5xl mx-auto py-16 px-6">
+      {/* 4. Tag Filter Section (취향 저격 필터) */}
+      <div className="max-w-5xl mx-auto pt-10 px-6">
+        <h3 className="text-xl font-black text-gray-800 mb-4">🎯 당신의 미식 취향을 선택해보세요!</h3>
+        <div className="flex flex-wrap gap-3">
+          {ALL_TAGS.map(tag => {
+            const isSelected = selectedTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                className={`px-5 py-2.5 rounded-full font-bold transition-all duration-300 transform ${isSelected ? 'bg-[#007db5] text-white scale-105 shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
+              >
+                #{tag}
+              </button>
+            );
+          })}
+        </div>
+        {selectedTags.length > 0 && (
+          <p className="mt-4 text-sm font-bold text-[#007db5] animate-pulse">
+            ✨ 취향에 가장 잘 맞는 식재료를 우선적으로 추천해 드립니다!
+          </p>
+        )}
+      </div>
+
+      {/* 5. Content List (카드형 레이아웃) */}
+      <div className="max-w-5xl mx-auto py-10 px-6">
         <div className="flex flex-col gap-10">
           {ingredients.map((item, index) => (
             <div 

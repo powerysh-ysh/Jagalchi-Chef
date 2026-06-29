@@ -4,7 +4,7 @@ import '../dashboard.css';
 import { useState, useEffect } from 'react';
 import { translateAndTag } from '@/app/actions/translate';
 import { db } from '@/lib/db';
-import { collection, onSnapshot, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -43,6 +43,27 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error(err);
       alert('데이터 채우기 실패');
+    }
+  };
+
+  const handleMigration = async () => {
+    if (!db) return;
+    try {
+      const snapshot = await getDocs(collection(db, 'ingredients'));
+      let updatedCount = 0;
+      for (const document of snapshot.docs) {
+        const data = document.data();
+        if (!data.tags || data.tags.length === 0) {
+          await updateDoc(doc(db, 'ingredients', document.id), {
+            tags: ['신선한', '로컬추천']
+          });
+          updatedCount++;
+        }
+      }
+      alert(`마이그레이션 완료! ${updatedCount}개의 옛날 상품에 기본 태그를 추가했습니다.`);
+    } catch (err) {
+      console.error(err);
+      alert('마이그레이션 실패');
     }
   };
 
@@ -124,6 +145,16 @@ export default function AdminDashboard() {
             }}
           >
             🌱 더미 데이터 채우기
+          </button>
+          
+          <button 
+            onClick={handleMigration}
+            style={{
+              backgroundColor: '#607d8b', color: 'white', border: 'none', 
+              padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '1rem'
+            }}
+          >
+            🔄 태그 마이그레이션
           </button>
           
           <button 
