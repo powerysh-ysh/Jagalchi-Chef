@@ -232,15 +232,22 @@ export default function Marketplace() {
         </div>
       </nav>
 
-      {/* 2. Hero Banner */}
+      {/* 2. Hero Banner (브랜딩 전면 쇄신: 샐러드 -> 프리미엄 해산물) */}
       <div 
         className="relative w-full h-[500px] flex items-center justify-center bg-cover bg-center"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1920&auto=format&fit=crop")' }}
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1534080564583-6be75777b70a?q=80&w=1920&auto=format&fit=crop")' }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-        <div className="relative z-10 text-center text-white animate-fade-in mt-16">
-          <h2 className="text-xl md:text-2xl font-bold mb-3 tracking-widest">{content.subtitle}</h2>
-          <h1 className="text-5xl md:text-7xl font-black drop-shadow-lg">{content.title}</h1>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30"></div>
+        <div className="relative z-10 text-center text-white animate-fade-in mt-16 px-4">
+          <div className="inline-block bg-[#ff5722] text-white px-4 py-1 rounded-full text-sm font-bold mb-4 tracking-widest uppercase">
+            프리미엄 3자 중개 미식 플랫폼
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black drop-shadow-2xl mb-4 leading-tight">
+            상인이 고른 바다의 신선함,<br/>전문 셰프가 완성하는 미식.
+          </h1>
+          <p className="text-xl md:text-2xl font-semibold opacity-90 drop-shadow-md">
+            자갈치 시장의 거친 생명력을 당신의 식탁으로 0.1초 만에 배달합니다.
+          </p>
         </div>
       </div>
 
@@ -256,77 +263,102 @@ export default function Marketplace() {
       </div>
 
       {/* 4. Tag Filter Section (취향 저격 필터) */}
-      <div className="max-w-5xl mx-auto pt-10 px-6">
-        <h3 className="text-xl font-black text-gray-800 mb-4">🎯 당신의 미식 취향을 선택해보세요!</h3>
-        <div className="flex flex-wrap gap-3">
+      <div className="max-w-6xl mx-auto pt-16 px-6">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-black text-gray-900">당신의 미식 취향은 무엇인가요?</h2>
+          <p className="text-gray-500 mt-2 font-semibold">선택하신 취향에 맞는 최고의 식재료와 셰프를 매칭해 드립니다.</p>
+        </div>
+        <div className="flex flex-wrap gap-3 justify-center">
           {ALL_TAGS.map(tag => {
             const isSelected = selectedTags.includes(tag);
             return (
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`px-5 py-2.5 rounded-full font-bold transition-all duration-300 transform ${isSelected ? 'bg-[#007db5] text-white scale-105 shadow-md' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
+                className={`px-5 py-2.5 rounded-full font-bold transition-all duration-300 transform ${isSelected ? 'bg-[#007db5] text-white shadow-lg -translate-y-1' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
               >
                 #{tag}
               </button>
             );
           })}
         </div>
-        {selectedTags.length > 0 && (
-          <p className="mt-4 text-sm font-bold text-[#007db5] animate-pulse">
-            ✨ 취향에 가장 잘 맞는 식재료를 우선적으로 추천해 드립니다!
-          </p>
-        )}
       </div>
 
-      {/* 5. Content List (카드형 레이아웃) */}
-      <div className="max-w-5xl mx-auto py-10 px-6">
-        <div className="flex flex-col gap-10">
-          {ingredients.map((item, index) => (
-            <div 
-              key={item.id} 
-              className="flex flex-col md:flex-row bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              {/* Image Section */}
-              <div className="md:w-5/12 relative min-h-[300px] md:min-h-full bg-gray-100 flex items-center justify-center">
-                {/* 실 DB에는 아직 이미지가 없으므로 플레이스홀더 사용 */}
-                <span className="text-gray-400 font-bold">이미지 준비중</span>
-              </div>
-
-              {/* Text Section */}
-              <div className="md:w-7/12 p-8 flex flex-col justify-center">
-                <h2 className="text-3xl font-black text-gray-900 mb-3">{item.name}</h2>
-                <p className="text-gray-600 text-[1.05rem] mb-6 leading-relaxed min-h-[3rem]">
-                  {item.category} 카테고리의 신선한 식재료입니다.
-                </p>
-                <div className="flex gap-2 mb-6 flex-wrap">
-                  {(item.tags || []).map(tag => (
-                    <span key={tag} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
-                      #{tag}
-                    </span>
-                  ))}
-                  <span className="text-[#007db5] font-bold py-1 ml-2">👨‍🍳 상인 직접 등록 상품</span>
-                </div>
-                
-                <div className="mt-auto flex justify-between items-center pt-5 border-t border-gray-100">
-                  <span className="text-2xl font-black text-gray-800">현지 시가</span>
-                  <button 
-                    onClick={() => router.push('/checkout')}
-                    className="border border-gray-400 text-gray-800 px-6 py-2.5 rounded font-bold hover:bg-gray-800 hover:text-white transition-colors"
-                  >
-                    {content.reserveBtn}
-                  </button>
-                </div>
-              </div>
+      {/* 5. 2-Step Customer Journey (진정한 3자 중개) */}
+      <div className="max-w-6xl mx-auto py-16 px-6">
+        
+        {/* Step 1: 소상공인(상인)의 수산물 마켓 */}
+        <div className="mb-20">
+          <div className="flex items-center gap-4 mb-8 border-b-2 border-gray-800 pb-4">
+            <div className="bg-gray-800 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black">1</div>
+            <div>
+              <h2 className="text-3xl font-black text-gray-900">싱싱한 원물을 고르세요 (상인 직판)</h2>
+              <p className="text-gray-500 font-bold mt-1">자갈치 시장 상인들이 직접 올린 오늘의 최고급 해산물입니다.</p>
             </div>
-          ))}
+          </div>
           
-          {ingredients.length === 0 && (
-            <div className="text-center py-20 text-gray-500 font-bold text-xl">
-              등록된 식재료가 없습니다. 상인 대시보드에서 식재료를 등록해 주세요!
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {ingredients.map((item, index) => (
+              <div 
+                key={item.id} 
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 animate-fade-in group cursor-pointer"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                {/* Image Section */}
+                <div className="relative h-60 bg-gray-100 overflow-hidden">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg bg-gradient-to-br from-gray-100 to-gray-200">이미지 준비중</div>
+                  )}
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-black text-[#ff5722] shadow-sm">
+                    {item.category === 'General' ? '당일 바리' : item.category}
+                  </div>
+                </div>
+
+                {/* Text Section */}
+                <div className="p-6">
+                  <h3 className="text-2xl font-black text-gray-900 mb-2 truncate">{item.name}</h3>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {(item.tags || []).map(tag => (
+                      <span key={tag} className="bg-blue-50 text-[#007db5] border border-blue-100 px-2.5 py-1 rounded-md text-xs font-bold">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-end border-t pt-4 border-gray-100">
+                    <div>
+                      <span className="block text-xs text-gray-400 font-bold mb-1">상인 직판가</span>
+                      <span className="text-2xl font-black text-gray-900">시가</span>
+                    </div>
+                    <button className="bg-gray-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-[#ff5722] transition-colors shadow-md">
+                      선택하기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Step 2: 셰프 매칭 (Mock UI) */}
+        <div className="relative">
+          <div className="flex items-center gap-4 mb-8 border-b-2 border-[#007db5] pb-4">
+            <div className="bg-[#007db5] text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black">2</div>
+            <div>
+              <h2 className="text-3xl font-black text-[#007db5]">원물을 요리해 줄 셰프를 매칭하세요</h2>
+              <p className="text-gray-500 font-bold mt-1">고르신 해산물을 최고의 요리로 탄생시킬 초장집/전문 셰프 목록입니다.</p>
             </div>
-          )}
+          </div>
+          
+          <div className="bg-white border-2 border-dashed border-[#007db5]/30 rounded-2xl p-10 text-center bg-blue-50/50">
+            <div className="text-5xl mb-4">👨‍🍳</div>
+            <h3 className="text-2xl font-black text-gray-800 mb-2">먼저 1단계에서 해산물을 선택해주세요!</h3>
+            <p className="text-gray-600 font-semibold mb-6">해산물(원물)을 선택하시면, 해당 식재료를 가장 잘 다루는<br/>일식/한식 전문 셰프 리스트가 이곳에 자동으로 나타납니다.</p>
+            <div className="inline-block border border-[#007db5] text-[#007db5] bg-white px-6 py-3 rounded-xl font-bold opacity-70">
+              [상인 원물 30,000원] + [셰프 조리비 15,000원] = 통합 결제 시스템 준비중
+            </div>
+          </div>
         </div>
       </div>
     </div>
