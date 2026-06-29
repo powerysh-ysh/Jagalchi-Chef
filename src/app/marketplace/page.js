@@ -9,6 +9,21 @@ import { db } from '@/lib/db';
 import { collection, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firestore';
 import '../globals.css';
 
+const TAG_MAP = {
+  '할랄': 'Halal',
+  '부드러운 맛': 'Mild Taste',
+  '이색체험': 'Adventurous',
+  '날해산물': 'Raw Seafood',
+  '글루텐프리': 'Gluten-Free',
+  '건강식': 'Healthy',
+  '매운맛': 'Spicy',
+  '전통체험': 'Traditional',
+  '고급스러운': 'Premium',
+  '신선한 회(날것)': 'Fresh Sashimi',
+  '달콤한 맛': 'Sweet Taste',
+  '구이': 'Grilled',
+  '조림': 'Braised'
+};
 const ALL_TAGS = ['할랄', '부드러운 맛', '이색체험', '날해산물', '글루텐프리', '건강식', '매운맛', '전통체험'];
 
 const data = {
@@ -18,6 +33,17 @@ const data = {
     desc: "자갈치 시장의 거친 생명력을 당신의 식탁으로 0.1초 만에 배달합니다.",
     nav1: "프로그램",
     nav2: "미식체험",
+    topNavAbout: "소개",
+    topNavBrands: "브랜드 전시관",
+    topNavCommunity: "커뮤니티",
+    roleAdmin: "재고 등록 (어드민)",
+    roleMerchant: "상인",
+    roleChef: "셰프",
+    roleTourist: "여행객",
+    myPage: "마이페이지",
+    login: "로그인",
+    logout: "로그아웃",
+    notReady: "현재 준비 중인 메뉴입니다!",
     tasteTitle: "당신의 미식 취향은 무엇인가요?",
     tasteDesc: "선택하신 취향에 맞는 최고의 식재료와 셰프를 매칭해 드립니다.",
     step1Title: "싱싱한 원물을 고르세요 (상인 직판)",
@@ -36,6 +62,17 @@ const data = {
     desc: "Delivering the raw vitality of Jagalchi Market to your table in 0.1 seconds.",
     nav1: "Programs",
     nav2: "Culinary Experience",
+    topNavAbout: "About",
+    topNavBrands: "Brands",
+    topNavCommunity: "Community",
+    roleAdmin: "Inventory (Admin)",
+    roleMerchant: "Merchant",
+    roleChef: "Chef",
+    roleTourist: "Tourist",
+    myPage: "My Page",
+    login: "Login",
+    logout: "Logout",
+    notReady: "Menu currently under development!",
     tasteTitle: "What is your culinary preference?",
     tasteDesc: "We will match you with the best ingredients and chefs based on your taste.",
     step1Title: "Select Fresh Ingredients (Merchant Direct)",
@@ -140,10 +177,10 @@ export default function Marketplace() {
       <nav className="fixed w-full z-50 bg-[#007db5] text-white flex justify-between items-center px-8 py-4 shadow-md">
         <div className="text-2xl font-black tracking-tighter">자갈치 셰프</div>
         <div className="hidden md:flex gap-8 font-bold text-lg">
-          <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>소개</span>
-          <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>브랜드 전시관</span>
-          <span className="cursor-pointer hover:opacity-80" onClick={() => alert('현재 준비 중인 메뉴입니다!')}>프로그램</span>
-          <span className="cursor-pointer hover:opacity-80" onClick={() => router.push('/community')}>커뮤니티</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => alert(content.notReady)}>{content.topNavAbout}</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => alert(content.notReady)}>{content.topNavBrands}</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => alert(content.notReady)}>{content.nav1}</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => router.push('/community')}>{content.topNavCommunity}</span>
         </div>
         <div className="flex gap-4 items-center">
           {/* 어드민 대시보드 바로가기 버튼 */}
@@ -152,7 +189,7 @@ export default function Marketplace() {
               onClick={() => router.push('/dashboard/admin')}
               className="bg-yellow-400 text-[#007db5] px-4 py-2 rounded-full font-bold hover:bg-yellow-300 transition-all shadow-sm"
             >
-              🛠️ 재고 등록 (어드민)
+              🛠️ {content.roleAdmin}
             </button>
           )}
 
@@ -170,16 +207,16 @@ export default function Marketplace() {
                 {role === 'merchant' ? '🏪' : role === 'chef' ? '👨‍🍳' : '🎒'}
               </span>
               <span className="font-bold text-sm">
-                {user.email?.split('@')[0]} 님 
+                {user.email?.split('@')[0]} 
                 <span className="text-yellow-300 ml-1">
-                  ({role === 'merchant' ? '상인' : role === 'chef' ? '셰프' : '여행객'})
+                  ({role === 'merchant' ? content.roleMerchant : role === 'chef' ? content.roleChef : content.roleTourist})
                 </span>
               </span>
               <button 
                 onClick={() => router.push('/mypage')}
                 className="ml-2 bg-white text-[#007db5] px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-100 transition-colors shadow-sm"
               >
-                마이페이지
+                {content.myPage}
               </button>
             </div>
           )}
@@ -190,7 +227,7 @@ export default function Marketplace() {
               onClick={handleAuthAction}
               className="bg-white text-[#007db5] px-4 py-2 rounded-full font-bold hover:bg-gray-100 transition-all shadow-sm"
             >
-              {user ? '로그아웃' : '로그인'}
+              {user ? content.logout : content.login}
             </button>
           )}
         </div>
@@ -241,7 +278,7 @@ export default function Marketplace() {
                 onClick={() => toggleTag(tag)}
                 className={`px-5 py-2.5 rounded-full font-bold transition-all duration-300 transform ${isSelected ? 'bg-[#007db5] text-white shadow-lg -translate-y-1' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
               >
-                #{tag}
+                #{lang === 'en' && TAG_MAP[tag] ? TAG_MAP[tag] : tag}
               </button>
             );
           })}
@@ -276,17 +313,20 @@ export default function Marketplace() {
                     <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg bg-gradient-to-br from-gray-100 to-gray-200">이미지 준비중</div>
                   )}
                   <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-black text-[#ff5722] shadow-sm">
-                    {item.category === 'General' ? '당일 바리' : item.category}
+                    {item.category === 'General' ? (lang === 'ko' ? '당일 바리' : 'Fresh Catch') : item.category}
                   </div>
                 </div>
 
                 {/* Text Section */}
                 <div className="p-6">
-                  <h3 className="text-2xl font-black text-gray-900 mb-2 truncate">{item.name}</h3>
+                  {/* truncate 제거하여 긴 상품명도 온전히 보이게 수정 */}
+                  <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2 leading-snug">
+                    {lang === 'en' && item.name.includes('(') ? item.name.split('(')[1].replace(')', '') : item.name}
+                  </h3>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {(item.tags || []).map(tag => (
                       <span key={tag} className="bg-blue-50 text-[#007db5] border border-blue-100 px-2.5 py-1 rounded-md text-xs font-bold">
-                        #{tag}
+                        #{lang === 'en' && TAG_MAP[tag] ? TAG_MAP[tag] : tag}
                       </span>
                     ))}
                   </div>
