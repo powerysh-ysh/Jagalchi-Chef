@@ -1,0 +1,30 @@
+[debug] [2026-06-29T03:31:01.958Z] ----------------------------------------------------------------------
+[debug] [2026-06-29T03:31:01.966Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\jini\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js apps:list --project=jagalchi-chef-500901
+[debug] [2026-06-29T03:31:01.966Z] CLI Version:   15.17.0
+[debug] [2026-06-29T03:31:01.966Z] Platform:      win32
+[debug] [2026-06-29T03:31:01.966Z] Node Version:  v24.15.0
+[debug] [2026-06-29T03:31:01.967Z] Time:          Mon Jun 29 2026 12:31:01 GMT+0900 (한국 표준시)
+[debug] [2026-06-29T03:31:01.967Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-29T03:31:01.974Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-06-29T03:31:02.399Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-29T03:31:02.399Z] > authorizing via signed-in user (powerysh@gmail.com)
+[debug] [2026-06-29T03:31:02.403Z] Checked if tokens are valid: false, expires at: 1782452139644
+[debug] [2026-06-29T03:31:02.404Z] Checked if tokens are valid: false, expires at: 1782452139644
+[debug] [2026-06-29T03:31:02.404Z] > refreshing access token with scopes: []
+[debug] [2026-06-29T03:31:02.405Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-06-29T03:31:02.405Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-06-29T03:31:02.639Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-06-29T03:31:02.639Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-06-29T03:31:02.657Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/jagalchi-chef-500901:searchApps pageSize=100
+[debug] [2026-06-29T03:31:02.810Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-06-29T03:31:02.811Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-06-29T03:31:03.138Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/jagalchi-chef-500901:searchApps 404
+[debug] [2026-06-29T03:31:03.139Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/jagalchi-chef-500901:searchApps {"error":{"code":404,"message":"Firebase project 121300206367 not found.","status":"NOT_FOUND"}}
+[debug] [2026-06-29T03:31:03.141Z] Request to https://firebase.googleapis.com/v1beta1/projects/jagalchi-chef-500901:searchApps?pageSize=100 had HTTP Error: 404, Firebase project 121300206367 not found.
+[debug] [2026-06-29T03:31:03.360Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/jagalchi-chef-500901:searchApps?pageSize=100 had HTTP Error: 404, Firebase project 121300206367 not found.
+    at responseToError (C:\Users\jini\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:53:12)
+    at RetryOperation._fn (C:\Users\jini\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:333:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[error] 
+[error] Error: Failed to list Firebase apps. See firebase-debug.log for more info.
