@@ -13,76 +13,40 @@ const ALL_TAGS = ['할랄', '부드러운 맛', '이색체험', '날해산물', 
 
 const data = {
   ko: {
-    title: "자갈치 미식체험",
-    subtitle: "Jagalchi Culinary Experience",
+    title: "상인이 고른 바다의 신선함,\n전문 셰프가 완성하는 미식.",
+    subtitle: "프리미엄 3자 중개 미식 플랫폼",
+    desc: "자갈치 시장의 거친 생명력을 당신의 식탁으로 0.1초 만에 배달합니다.",
     nav1: "프로그램",
     nav2: "미식체험",
-    items: [
-      { 
-        id: 101, 
-        name: '자연산 참돔 세트 (할랄 준비)', 
-        desc: '부산 자갈치 시장의 가장 신선한 참돔을 정성스럽게 손질하여 제공합니다. 이슬람 율법을 엄격히 준수한 할랄 조리법으로 요리됩니다.',
-        price: '₩45,000', 
-        chef: '김 셰프', 
-        tags: ['할랄', '부드러운 맛'],
-        image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=600&auto=format&fit=crop'
-      },
-      { 
-        id: 102, 
-        name: '산낙지 탕탕이', 
-        desc: '살아있는 낙지를 바로 썰어 참기름과 함께 제공하는 한국의 대표적인 이색 해산물 체험입니다. 도전적인 미식가들에게 강력히 추천합니다.',
-        price: '₩25,000', 
-        chef: '박 셰프', 
-        tags: ['이색체험', '날해산물'],
-        image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=600&auto=format&fit=crop'
-      },
-      { 
-        id: 103, 
-        name: '프리미엄 전복죽', 
-        desc: '완도산 최고급 전복을 통째로 갈아 넣어 깊고 진한 바다의 향을 담아냈습니다. 글루텐 프리 안심 식단입니다.',
-        price: '₩20,000', 
-        chef: '이 셰프', 
-        tags: ['글루텐프리', '건강식'],
-        image: 'https://images.unsplash.com/photo-1626071465999-52c78a08a2fc?q=80&w=600&auto=format&fit=crop'
-      }
-    ],
-    reserveBtn: "자세히보기 및 예약"
+    tasteTitle: "당신의 미식 취향은 무엇인가요?",
+    tasteDesc: "선택하신 취향에 맞는 최고의 식재료와 셰프를 매칭해 드립니다.",
+    step1Title: "싱싱한 원물을 고르세요 (상인 직판)",
+    step1Desc: "자갈치 시장 상인들이 직접 올린 오늘의 최고급 해산물입니다.",
+    step2Title: "원물을 요리해 줄 셰프를 매칭하세요",
+    step2Desc: "고르신 해산물을 최고의 요리로 탄생시킬 초장집/전문 셰프 목록입니다.",
+    step2Warning: "먼저 1단계에서 해산물을 선택해주세요!",
+    step2WarningDesc: "해산물(원물)을 선택하시면, 해당 식재료를 가장 잘 다루는\n일식/한식 전문 셰프 리스트가 이곳에 자동으로 나타납니다.",
+    reserveBtn: "선택하기",
+    merchantPrice: "상인 직판가",
+    currentPrice: "시가"
   },
   en: {
-    title: "Jagalchi Culinary Experience",
-    subtitle: "Busan's Finest Seafood",
+    title: "Freshness from Merchants,\nGastronomy by Chefs.",
+    subtitle: "Premium 3-Way Mediation Platform",
+    desc: "Delivering the raw vitality of Jagalchi Market to your table in 0.1 seconds.",
     nav1: "Programs",
     nav2: "Culinary Experience",
-    items: [
-      { 
-        id: 101, 
-        name: 'Wild Red Sea Bream Set (Halal)', 
-        desc: 'The freshest red sea bream from Jagalchi Market, meticulously prepared following strict Halal culinary practices.',
-        price: '$35.00', 
-        chef: 'Chef Kim', 
-        tags: ['Halal', 'Mild'],
-        image: 'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=600&auto=format&fit=crop'
-      },
-      { 
-        id: 102, 
-        name: 'Live Octopus Sashimi (San-nakji)', 
-        desc: 'A quintessential Korean exotic seafood experience. Freshly chopped live octopus served with sesame oil. Highly recommended for adventurous foodies.',
-        price: '$20.00', 
-        chef: 'Chef Park', 
-        tags: ['Adventurous', 'Raw Seafood'],
-        image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=600&auto=format&fit=crop'
-      },
-      { 
-        id: 103, 
-        name: 'Premium Abalone Porridge', 
-        desc: 'Made with whole top-grade abalone from Wando, capturing the deep essence of the sea. A comforting, gluten-free healthy choice.',
-        price: '$15.00', 
-        chef: 'Chef Lee', 
-        tags: ['Gluten-Free', 'Healthy'],
-        image: 'https://images.unsplash.com/photo-1626071465999-52c78a08a2fc?q=80&w=600&auto=format&fit=crop'
-      }
-    ],
-    reserveBtn: "View Details & Reserve"
+    tasteTitle: "What is your culinary preference?",
+    tasteDesc: "We will match you with the best ingredients and chefs based on your taste.",
+    step1Title: "Select Fresh Ingredients (Merchant Direct)",
+    step1Desc: "Today's premium seafood listed directly by Jagalchi Market merchants.",
+    step2Title: "Match a Chef to cook your ingredients",
+    step2Desc: "List of expert chefs ready to transform your seafood into a masterpiece.",
+    step2Warning: "Please select your seafood in Step 1 first!",
+    step2WarningDesc: "Once you select your seafood, a list of specialized chefs\nwill automatically appear here.",
+    reserveBtn: "Select",
+    merchantPrice: "Direct Price",
+    currentPrice: "Market Price"
   }
 }
 
@@ -240,13 +204,13 @@ export default function Marketplace() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30"></div>
         <div className="relative z-10 text-center text-white animate-fade-in mt-16 px-4">
           <div className="inline-block bg-[#ff5722] text-white px-4 py-1 rounded-full text-sm font-bold mb-4 tracking-widest uppercase">
-            프리미엄 3자 중개 미식 플랫폼
+            {content.subtitle}
           </div>
-          <h1 className="text-5xl md:text-7xl font-black drop-shadow-2xl mb-4 leading-tight">
-            상인이 고른 바다의 신선함,<br/>전문 셰프가 완성하는 미식.
+          <h1 className="text-5xl md:text-7xl font-black drop-shadow-2xl mb-4 leading-tight whitespace-pre-line">
+            {content.title}
           </h1>
           <p className="text-xl md:text-2xl font-semibold opacity-90 drop-shadow-md">
-            자갈치 시장의 거친 생명력을 당신의 식탁으로 0.1초 만에 배달합니다.
+            {content.desc}
           </p>
         </div>
       </div>
@@ -265,8 +229,8 @@ export default function Marketplace() {
       {/* 4. Tag Filter Section (취향 저격 필터) */}
       <div className="max-w-6xl mx-auto pt-16 px-6">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-black text-gray-900">당신의 미식 취향은 무엇인가요?</h2>
-          <p className="text-gray-500 mt-2 font-semibold">선택하신 취향에 맞는 최고의 식재료와 셰프를 매칭해 드립니다.</p>
+          <h2 className="text-3xl font-black text-gray-900">{content.tasteTitle}</h2>
+          <p className="text-gray-500 mt-2 font-semibold">{content.tasteDesc}</p>
         </div>
         <div className="flex flex-wrap gap-3 justify-center">
           {ALL_TAGS.map(tag => {
@@ -292,8 +256,8 @@ export default function Marketplace() {
           <div className="flex items-center gap-4 mb-8 border-b-2 border-gray-800 pb-4">
             <div className="bg-gray-800 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black">1</div>
             <div>
-              <h2 className="text-3xl font-black text-gray-900">싱싱한 원물을 고르세요 (상인 직판)</h2>
-              <p className="text-gray-500 font-bold mt-1">자갈치 시장 상인들이 직접 올린 오늘의 최고급 해산물입니다.</p>
+              <h2 className="text-3xl font-black text-gray-900">{content.step1Title}</h2>
+              <p className="text-gray-500 font-bold mt-1">{content.step1Desc}</p>
             </div>
           </div>
           
@@ -328,11 +292,11 @@ export default function Marketplace() {
                   </div>
                   <div className="flex justify-between items-end border-t pt-4 border-gray-100">
                     <div>
-                      <span className="block text-xs text-gray-400 font-bold mb-1">상인 직판가</span>
-                      <span className="text-2xl font-black text-gray-900">시가</span>
+                      <span className="block text-xs text-gray-400 font-bold mb-1">{content.merchantPrice}</span>
+                      <span className="text-2xl font-black text-gray-900">{content.currentPrice}</span>
                     </div>
                     <button className="bg-gray-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-[#ff5722] transition-colors shadow-md">
-                      선택하기
+                      {content.reserveBtn}
                     </button>
                   </div>
                 </div>
@@ -346,15 +310,15 @@ export default function Marketplace() {
           <div className="flex items-center gap-4 mb-8 border-b-2 border-[#007db5] pb-4">
             <div className="bg-[#007db5] text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black">2</div>
             <div>
-              <h2 className="text-3xl font-black text-[#007db5]">원물을 요리해 줄 셰프를 매칭하세요</h2>
-              <p className="text-gray-500 font-bold mt-1">고르신 해산물을 최고의 요리로 탄생시킬 초장집/전문 셰프 목록입니다.</p>
+              <h2 className="text-3xl font-black text-[#007db5]">{content.step2Title}</h2>
+              <p className="text-gray-500 font-bold mt-1">{content.step2Desc}</p>
             </div>
           </div>
           
           <div className="bg-white border-2 border-dashed border-[#007db5]/30 rounded-2xl p-10 text-center bg-blue-50/50">
             <div className="text-5xl mb-4">👨‍🍳</div>
-            <h3 className="text-2xl font-black text-gray-800 mb-2">먼저 1단계에서 해산물을 선택해주세요!</h3>
-            <p className="text-gray-600 font-semibold mb-6">해산물(원물)을 선택하시면, 해당 식재료를 가장 잘 다루는<br/>일식/한식 전문 셰프 리스트가 이곳에 자동으로 나타납니다.</p>
+            <h3 className="text-2xl font-black text-gray-800 mb-2">{content.step2Warning}</h3>
+            <p className="text-gray-600 font-semibold mb-6 whitespace-pre-line">{content.step2WarningDesc}</p>
             <div className="inline-block border border-[#007db5] text-[#007db5] bg-white px-6 py-3 rounded-xl font-bold opacity-70">
               [상인 원물 30,000원] + [셰프 조리비 15,000원] = 통합 결제 시스템 준비중
             </div>
