@@ -37,9 +37,54 @@ export default function AdminDashboard() {
     if (!db) return;
     try {
       const seedItems = [
-        { name: "자연산 참돔 세트 (Wild Red Sea Bream Set)", category: "General", stock: true, tags: ["할랄", "부드러운 맛"] },
-        { name: "산낙지 탕탕이 (Live Octopus Sashimi)", category: "General", stock: true, tags: ["이색체험", "날해산물"] },
-        { name: "프리미엄 전복죽 (Premium Abalone Porridge)", category: "General", stock: true, tags: ["글루텐프리", "건강식"] }
+        { 
+          name: "자연산 참돔 세트 (Wild Red Sea Bream Set)", 
+          category: "General", stock: true, 
+          tags: ["할랄", "부드러운 맛", "고급스러운"],
+          imageUrl: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "산낙지 탕탕이 (Live Octopus Sashimi)", 
+          category: "General", stock: true, 
+          tags: ["이색체험", "날해산물", "건강식"],
+          imageUrl: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "프리미엄 킹크랩 (Premium King Crab)", 
+          category: "General", stock: true, 
+          tags: ["할랄", "부드러운 맛"],
+          imageUrl: "https://plus.unsplash.com/premium_photo-1669222304899-738917830b56?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "자갈치 특 붕장어 (Jagalchi Sea Eel)", 
+          category: "General", stock: true, 
+          tags: ["구이", "건강식"],
+          imageUrl: "https://images.unsplash.com/photo-1522814041131-41e739ec1c7f?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "해녀 채취 자연산 전복 (Wild Abalone)", 
+          category: "General", stock: true, 
+          tags: ["신선한 회(날것)", "건강식", "글루텐프리"],
+          imageUrl: "https://images.unsplash.com/photo-1627918336338-348f5a3406f2?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "완도산 넙치/광어 (Wando Flatfish)", 
+          category: "General", stock: true, 
+          tags: ["부드러운 맛", "신선한 회(날것)"],
+          imageUrl: "https://images.unsplash.com/photo-1534080564583-6be75777b70a?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "독도 새우 (Dokdo Shrimp)", 
+          category: "General", stock: true, 
+          tags: ["달콤한 맛", "신선한 회(날것)", "이색체험"],
+          imageUrl: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?q=80&w=600&auto=format&fit=crop"
+        },
+        { 
+          name: "제주 은갈치 통마리 (Jeju Hairtail)", 
+          category: "General", stock: true, 
+          tags: ["구이", "매콤한 맛", "조림"],
+          imageUrl: "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?q=80&w=600&auto=format&fit=crop"
+        }
       ];
       for (const item of seedItems) {
         await addDoc(collection(db, 'ingredients'), {
@@ -47,7 +92,7 @@ export default function AdminDashboard() {
           createdAt: serverTimestamp()
         });
       }
-      alert('더미 데이터 3종이 성공적으로 등록되었습니다!');
+      alert('프리미엄 더미 데이터 8종이 성공적으로 등록되었습니다!');
     } catch (err) {
       console.error(err);
       alert('데이터 채우기 실패');
