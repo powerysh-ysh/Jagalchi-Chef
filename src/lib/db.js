@@ -39,9 +39,20 @@ export async function transitionReservationState(reservationId, currentState, ne
  */
 export async function saveTouristProfile(uid, profileData) {
   const userRef = doc(db, 'users', uid);
+  
+  // 마이페이지/마켓플레이스 연동을 위해 모든 취향을 하나의 배열로 취합 (단일 진실 공급원)
+  const allSelectedTags = [
+    ...(profileData.dietary || []),
+    ...(profileData.allergies || []),
+    ...(profileData.preferences || [])
+  ];
+  const uniqueTags = [...new Set(allSelectedTags)];
+
   await setDoc(userRef, {
     role: 'tourist',
-    foodProfile: profileData,
+    dietary: profileData.dietary || [],
+    allergies: profileData.allergies || [],
+    preferences: uniqueTags,
     createdAt: new Date()
   }, { merge: true });
 }
