@@ -54,6 +54,23 @@ export default function Inquiries() {
         status: 'pending', // 초기 상태: pending
         createdAt: serverTimestamp()
       });
+
+      // 관리자에게 푸시 알림 전송 API 호출 (백그라운드로 실행되도록 await 생략 가능하지만 확실한 에러 체킹을 위해 await 적용)
+      try {
+        await fetch('/api/send-admin-notification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            title, 
+            content, 
+            nickname: user.displayName || user.email || '익명 사용자' 
+          }),
+        });
+      } catch (notifyError) {
+        console.error('푸시 알림 발송 실패:', notifyError);
+        // 푸시 알림이 실패하더라도 문의 자체는 등록되었으므로 정상 처리 진행
+      }
+
       setTitle('');
       setContent('');
       alert('문의가 성공적으로 접수되었습니다. 빠른 시일 내에 답변해 드리겠습니다.');

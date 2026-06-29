@@ -43,3 +43,7 @@ next-env.d.ts
 # AI / Personal Configs
 AGENTS.md
 CLAUDE.md
+
+# GCP Service Accounts (CRITICAL SECURITY)
+*-service-account-key.json
+*.json.key

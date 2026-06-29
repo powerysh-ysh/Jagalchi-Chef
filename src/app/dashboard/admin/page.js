@@ -7,10 +7,13 @@ import { db } from '@/lib/db';
 import { collection, onSnapshot, getDocs, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, messaging } from '@/lib/firebase';
+import { getToken } from 'firebase/messaging';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { user } = useAuth();
   const [ingredients, setIngredients] = useState([]);
 
   const [newItemName, setNewItemName] = useState('');
@@ -64,6 +67,34 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error(err);
       alert('마이그레이션 실패');
+    }
+  };
+
+  const requestNotificationPermission = async () => {
+    if (!messaging || !user) {
+      alert("알림을 지원하지 않는 브라우저이거나 로그인이 필요합니다.");
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const token = await getToken(messaging, {
+          vapidKey: 'YOUR_VAPID_KEY_HERE_IF_NEEDED', // VAPID 키가 필요하다면 여기에 설정 (로컬테스트 시 생략가능)
+        });
+        if (token) {
+          // users 컬렉션에 토큰 저장
+          await updateDoc(doc(db, 'users', user.uid), {
+            fcmToken: token,
+            role: 'admin' // 확실히 admin 역할 명시
+          });
+          alert('푸시 알림이 성공적으로 설정되었습니다!');
+        }
+      } else {
+        alert('푸시 알림 권한이 거부되었습니다.');
+      }
+    } catch (error) {
+      console.error('FCM Token error:', error);
+      alert('푸시 알림 설정 중 오류가 발생했습니다.');
     }
   };
 
@@ -155,6 +186,16 @@ export default function AdminDashboard() {
             }}
           >
             🔄 태그 마이그레이션
+          </button>
+          
+          <button 
+            onClick={requestNotificationPermission}
+            style={{
+              backgroundColor: '#ffb300', color: 'white', border: 'none', 
+              padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '1rem'
+            }}
+          >
+            🔔 알림 권한 허용
           </button>
           
           <button 
