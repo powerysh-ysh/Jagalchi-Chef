@@ -94,22 +94,19 @@ export default function Marketplace() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [userPreferencesLoaded, setUserPreferencesLoaded] = useState(false);
 
-  // 유저의 기존 취향(Preferences) 불러오기
+  // 유저의 기존 취향(Preferences) 실시간 연동 (Single Source of Truth)
   useEffect(() => {
     if (!user || !db) return;
-    const loadPreferences = async () => {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists() && userDoc.data().preferences) {
-          setSelectedTags(userDoc.data().preferences);
-        }
-      } catch (err) {
-        console.error("Preferences load error:", err);
-      } finally {
-        setUserPreferencesLoaded(true);
+    const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().preferences) {
+        setSelectedTags(docSnap.data().preferences);
       }
-    };
-    loadPreferences();
+      setUserPreferencesLoaded(true);
+    }, (err) => {
+      console.error("Preferences load error:", err);
+      setUserPreferencesLoaded(true);
+    });
+    return () => unsubscribe();
   }, [user]);
 
   // 상품 목록 불러오기 및 가중치 매칭(Weight-based Matching) 정렬
@@ -202,7 +199,7 @@ export default function Marketplace() {
             🌐 {lang === 'ko' ? 'KO' : 'EN'}
           </button>
           
-          {/* 로그인한 유저 정보 표시 */}
+          {/* 로그인한 유저 정보 표시 및 마이페이지 버튼 */}
           {user && (
             <div className="hidden lg:flex items-center gap-2 bg-[#005f8a] px-4 py-2 rounded-full shadow-inner border border-[#004e73]">
               <span className="text-lg">
@@ -214,6 +211,12 @@ export default function Marketplace() {
                   ({role === 'merchant' ? '상인' : role === 'chef' ? '셰프' : '여행객'})
                 </span>
               </span>
+              <button 
+                onClick={() => router.push('/mypage')}
+                className="ml-2 bg-white text-[#007db5] px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-100 transition-colors shadow-sm"
+              >
+                마이페이지
+              </button>
             </div>
           )}
           

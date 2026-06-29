@@ -9,7 +9,7 @@ import './onboarding.css';
 export default function Onboarding() {
   const router = useRouter();
   const { user } = useAuth();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [profile, setProfile] = useState({
     dietary: [],
     allergies: [],
@@ -47,13 +47,30 @@ export default function Onboarding() {
     });
   };
 
+  const currentProgress = step === 0 ? 0 : (step / 3) * 100;
+
   return (
     <div className="onboarding-container">
       <div className="progress-bar-container">
-        <div className="progress-bar" style={{ width: `${(step / 3) * 100}%` }}></div>
+        <div className="progress-bar" style={{ width: `${currentProgress}%` }}></div>
       </div>
       
       <div className="card animate-fade-in step-card" key={step}>
+        {step === 0 && (
+          <div className="text-center py-4">
+            <div className="text-6xl mb-6">🎯</div>
+            <h2 className="text-3xl font-black text-[#007db5] mb-4">환영합니다!</h2>
+            <p className="text-lg text-gray-700 leading-relaxed font-semibold">
+              자갈치 셰프는 고객님의 체질과 취향을 분석하여,<br/>
+              수백 가지 해산물 중 <span className="text-[#ff5722]">가장 완벽하고 안전한 맞춤형 식재료</span>를<br/>
+              단 0.1초 만에 매칭해 드립니다.
+            </p>
+            <p className="text-sm text-gray-500 mt-6 bg-gray-50 p-4 rounded-lg inline-block">
+              고객님의 완벽한 미식 경험을 위해, 딱 3가지 질문에만 답해주세요!
+            </p>
+          </div>
+        )}
+
         {step === 1 && (
           <>
             <h2>식단 제한이 있으신가요?</h2>
@@ -108,10 +125,10 @@ export default function Onboarding() {
           </>
         )}
         
-        <div className="nav-buttons">
-          {step > 1 && <button className="btn-secondary" onClick={() => setStep(step - 1)}>뒤로</button>}
+        <div className="nav-buttons mt-8">
+          {step > 0 && <button className="btn-secondary" onClick={() => setStep(step - 1)}>뒤로</button>}
           <button className="btn-primary" style={{ marginLeft: 'auto' }} onClick={handleNext}>
-            {step === 3 ? '프로필 완성 및 입장' : '다음'}
+            {step === 0 ? '시작하기' : step === 3 ? '프로필 완성 및 입장' : '다음'}
           </button>
         </div>
       </div>
