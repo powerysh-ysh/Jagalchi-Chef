@@ -140,12 +140,16 @@ export default function Marketplace() {
         const seedItems = [
           { name: "자연산 참돔 세트 (Wild Red Sea Bream Set)", category: "General", stock: true, tags: ["할랄", "부드러운 맛", "고급스러운"], imageUrl: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=600&auto=format&fit=crop" },
           { name: "산낙지 탕탕이 (Live Octopus Sashimi)", category: "General", stock: true, tags: ["이색체험", "날해산물", "건강식"], imageUrl: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=600&auto=format&fit=crop" },
-          { name: "프리미엄 킹크랩 (Premium King Crab)", category: "General", stock: true, tags: ["할랄", "부드러운 맛"], imageUrl: "https://plus.unsplash.com/premium_photo-1669222304899-738917830b56?q=80&w=600&auto=format&fit=crop" },
-          { name: "자갈치 특 붕장어 (Jagalchi Sea Eel)", category: "General", stock: true, tags: ["구이", "건강식"], imageUrl: "https://images.unsplash.com/photo-1522814041131-41e739ec1c7f?q=80&w=600&auto=format&fit=crop" },
+          { name: "프리미엄 킹크랩 (Premium King Crab)", category: "General", stock: true, tags: ["할랄", "고급스러운", "부드러운 맛"], imageUrl: "https://plus.unsplash.com/premium_photo-1669222304899-738917830b56?q=80&w=600&auto=format&fit=crop" },
+          { name: "자갈치 특 붕장어 (Jagalchi Sea Eel)", category: "General", stock: true, tags: ["구이", "건강식", "전통체험"], imageUrl: "https://images.unsplash.com/photo-1522814041131-41e739ec1c7f?q=80&w=600&auto=format&fit=crop" },
           { name: "해녀 채취 자연산 전복 (Wild Abalone)", category: "General", stock: true, tags: ["신선한 회(날것)", "건강식", "글루텐프리"], imageUrl: "https://images.unsplash.com/photo-1627918336338-348f5a3406f2?q=80&w=600&auto=format&fit=crop" },
           { name: "완도산 넙치/광어 (Wando Flatfish)", category: "General", stock: true, tags: ["부드러운 맛", "신선한 회(날것)"], imageUrl: "https://images.unsplash.com/photo-1534080564583-6be75777b70a?q=80&w=600&auto=format&fit=crop" },
-          { name: "독도 새우 (Dokdo Shrimp)", category: "General", stock: true, tags: ["달콤한 맛", "신선한 회(날것)", "이색체험"], imageUrl: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?q=80&w=600&auto=format&fit=crop" },
-          { name: "제주 은갈치 통마리 (Jeju Hairtail)", category: "General", stock: true, tags: ["구이", "매콤한 맛", "조림"], imageUrl: "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?q=80&w=600&auto=format&fit=crop" }
+          { name: "독도 새우 (Dokdo Shrimp)", category: "General", stock: true, tags: ["달콤한 맛", "신선한 회(날것)", "이색체험", "고급스러운"], imageUrl: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?q=80&w=600&auto=format&fit=crop" },
+          { name: "제주 은갈치 통마리 (Jeju Hairtail)", category: "General", stock: true, tags: ["구이", "매운맛", "조림"], imageUrl: "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?q=80&w=600&auto=format&fit=crop" },
+          { name: "신선미 고등어회 (Fresh Mackerel Sashimi)", category: "General", stock: true, tags: ["신선한 회(날것)", "전통체험"], imageUrl: "https://images.unsplash.com/photo-1623356302220-7f28ed57a796?q=80&w=600&auto=format&fit=crop" },
+          { name: "해물 매운탕 거리 (Spicy Seafood Stew Kit)", category: "General", stock: true, tags: ["매운맛", "전통체험", "할랄"], imageUrl: "https://images.unsplash.com/photo-1632321287413-5a02e86bc111?q=80&w=600&auto=format&fit=crop" },
+          { name: "명품 바닷가재 (Luxury Lobster)", category: "General", stock: true, tags: ["고급스러운", "부드러운 맛", "이색체험"], imageUrl: "https://images.unsplash.com/photo-1594917849132-026601b63dd1?q=80&w=600&auto=format&fit=crop" },
+          { name: "제철 대하구이 세트 (Seasonal Jumbo Shrimp)", category: "General", stock: true, tags: ["구이", "달콤한 맛", "건강식"], imageUrl: "https://images.unsplash.com/photo-1514944288352-fffac99f0bdf?q=80&w=600&auto=format&fit=crop" }
         ];
         
         try {
