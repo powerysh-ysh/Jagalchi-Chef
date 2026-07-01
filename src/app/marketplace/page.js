@@ -210,6 +210,31 @@ export default function Marketplace() {
   const content = data[lang];
   const toggleLang = () => setLang(l => l === 'ko' ? 'en' : 'ko');
 
+  const handleReservation = async (chefName) => {
+    if (!user) {
+      alert("로그인이 필요합니다. 테스트를 위해 자동 로그인(익명)을 시도해주세요.");
+      return;
+    }
+    try {
+      const newReservation = {
+        touristId: user.uid,
+        ingredientId: selectedIngredient.id,
+        ingredientName: selectedIngredient.name.split('(')[0].trim(),
+        tags: selectedIngredient.tags || [],
+        amount: 50000, // 시연용 고정 금액
+        status: 'chef_assigned',
+        chefName: chefName,
+        createdAt: serverTimestamp()
+      };
+      await addDoc(collection(db, 'reservations'), newReservation);
+      alert('예약 및 결제가 완료되었습니다! 셰프의 모니터에 지금 즉시 주문이 들어갔습니다.');
+      setSelectedIngredient(null); // 초기화
+    } catch (err) {
+      console.error(err);
+      alert('예약 실패: ' + err.message);
+    }
+  };
+
   const handleAuthAction = async () => {
     if (user) {
       await signOut(auth);
@@ -493,7 +518,10 @@ export default function Marketplace() {
                       <div className="text-lg font-black text-gray-900">{chef.name}</div>
                       <div className="text-sm text-gray-600">{chef.desc}</div>
                     </div>
-                    <button className="bg-gray-100 text-gray-600 group-hover:bg-[#007db5] group-hover:text-white px-4 py-2 rounded-lg font-bold transition-colors">
+                    <button 
+                      onClick={() => handleReservation(chef.name)}
+                      className="bg-gray-100 text-gray-600 group-hover:bg-[#007db5] group-hover:text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                    >
                       요리 의뢰
                     </button>
                   </div>
