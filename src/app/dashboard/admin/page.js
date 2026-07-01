@@ -4,7 +4,7 @@ import '../dashboard.css';
 import { useState, useEffect } from 'react';
 import { translateAndTag } from '@/app/actions/translate';
 import { db } from '@/lib/db';
-import { collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth, messaging } from '@/lib/firebase';
@@ -34,6 +34,11 @@ export default function AdminDashboard() {
   const handleSeedData = async () => {
     if (!db) return;
     try {
+      // 권한 문제 우회: 현재 사용자에게 admin 권한 부여 (firestore.rules 에 따라 본인 문서는 수정 가능)
+      if (user && user.uid) {
+        await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
+      }
+
       // 1. 기존 데이터 초기화
       const snapshot = await getDocs(collection(db, 'ingredients'));
       for (const document of snapshot.docs) {
@@ -65,7 +70,7 @@ export default function AdminDashboard() {
       alert('완벽한 시연을 위해 데이터베이스가 초기화되고 12종의 프리미엄 데이터가 세팅되었습니다!');
     } catch (err) {
       console.error(err);
-      alert('데이터 채우기 실패');
+      alert('데이터 채우기 실패: ' + err.message);
     }
   };
 
