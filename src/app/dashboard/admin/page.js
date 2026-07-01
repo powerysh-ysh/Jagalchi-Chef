@@ -20,8 +20,6 @@ export default function AdminDashboard() {
   const [isTranslating, setIsTranslating] = useState(false);
   const [activeTab, setActiveTab] = useState('optionB'); // optionA or optionB
 
-  // 승인(Confirm) 모달 상태
-  const [confirmModalData, setConfirmModalData] = useState(null); 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleLogout = async () => {
@@ -181,15 +179,22 @@ export default function AdminDashboard() {
     try {
       const { translatedText, tags, imageUrl } = await translateAndTag(newItemName);
       
-      // DB 직행이 아니라 Confirm 모달 띄우기
-      setConfirmModalData([{
+      // DB 즉시 저장 (Confirm 모달 제거)
+      const dataToSave = {
         name: `${newItemName} (${translatedText})`,
         category: 'General',
         stock: true,
         tags: tags || [],
         imageUrl: imageUrl || ''
-      }]);
-
+      };
+      
+      await addDoc(collection(db, 'ingredients'), {
+        ...dataToSave,
+        createdAt: serverTimestamp()
+      });
+      
+      alert('성공적으로 자동 생성되어 마켓플레이스에 즉시 등록되었습니다!');
+      setNewItemName('');
     } catch (error) {
       alert("AI 매칭 중 오류가 발생했습니다.");
     } finally {
@@ -213,8 +218,18 @@ export default function AdminDashboard() {
       const data = await res.json();
 
       if (data.success && data.items) {
-        // DB 직행이 아니라 Confirm 모달 띄우기
-        setConfirmModalData(data.items);
+        // DB 즉시 저장 (Confirm 모달 제거)
+        for (const item of data.items) {
+          const { id, englishName, ...saveData } = item;
+          if (englishName && item.name.indexOf('(') === -1) {
+            saveData.name = `${item.name} (${englishName})`;
+          }
+          await addDoc(collection(db, 'ingredients'), {
+            ...saveData,
+            createdAt: serverTimestamp()
+          });
+        }
+        alert(`성공적으로 ${data.items.length}개의 메뉴가 자동 분석되어 마켓플레이스에 즉시 등록되었습니다!`);
       } else {
         alert(data.error || "메뉴 스캔 실패");
       }
@@ -224,30 +239,6 @@ export default function AdminDashboard() {
     } finally {
       setIsUploadingImage(false);
       e.target.value = ''; // input 초기화
-    }
-  };
-
-  const confirmAndSave = async () => {
-    if (!db || !confirmModalData) return;
-    try {
-      for (const item of confirmModalData) {
-        // id 등 불필요 필드 제거 후 DB 저장
-        const { id, englishName, ...saveData } = item;
-        // mock 데이터 포맷 보정
-        if (englishName && item.name.indexOf('(') === -1) {
-          saveData.name = `${item.name} (${englishName})`;
-        }
-        await addDoc(collection(db, 'ingredients'), {
-          ...saveData,
-          createdAt: serverTimestamp()
-        });
-      }
-      alert(`성공적으로 ${confirmModalData.length}개의 메뉴가 등록되었습니다!`);
-      setConfirmModalData(null);
-      setNewItemName('');
-    } catch (error) {
-      console.error(error);
-      alert("저장 중 오류 발생");
     }
   };
 
@@ -411,61 +402,7 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* 승인(Confirm) 팝업 모달 */}
-      {confirmModalData && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto p-8 shadow-2xl animate-fade-in">
-            <h2 className="text-3xl font-black text-gray-900 mb-2">✨ AI 초자동화 분석 결과</h2>
-            <p className="text-red-500 font-bold mb-6">등록하시겠습니까? (불필요한 과금을 막기 위해 상인의 최종 승인이 필요합니다)</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {confirmModalData.map((item, idx) => (
-                <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm relative">
-                  <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-gray-400">이미지 없음</span>
-                    )}
-                  </div>
-                  <div className="p-4 bg-white">
-                    <h3 className="font-bold text-lg mb-1">{item.name}</h3>
-                    {item.englishName && <p className="text-sm text-gray-500 mb-2">{item.englishName}</p>}
-                    <div className="flex flex-wrap gap-1">
-                      {(item.tags || []).map(tag => (
-                        <span key={tag} className="bg-blue-50 text-[#007db5] px-2 py-0.5 rounded text-xs font-bold border border-blue-100">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setConfirmModalData(confirmModalData.filter((_, i) => i !== idx))}
-                    className="absolute top-2 right-2 bg-white text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-md font-bold hover:bg-red-50"
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-4">
-              <button 
-                onClick={() => setConfirmModalData(null)}
-                className="flex-1 py-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors"
-              >
-                취소 (DB 저장 안 함)
-              </button>
-              <button 
-                onClick={confirmAndSave}
-                className="flex-[2] py-4 bg-[#ff5722] text-white font-black rounded-xl hover:bg-orange-600 transition-colors shadow-lg text-lg"
-              >
-                👍 {confirmModalData.length}개 메뉴 완벽합니다! 최종 등록하기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirm 모달은 초자동화 흐름을 위해 삭제되었습니다. */}
 
       {/* 실시간 재고 관리 영역 */}
       <div className="widget-card animate-fade-in" style={{ animationDelay: '0.1s' }}>
