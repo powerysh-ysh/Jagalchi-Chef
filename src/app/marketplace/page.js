@@ -26,6 +26,14 @@ const TAG_MAP = {
 };
 const ALL_TAGS = ['할랄', '부드러운 맛', '이색체험', '날해산물', '글루텐프리', '건강식', '매운맛', '전통체험'];
 
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?q=80&w=600&auto=format&fit=crop", 
+  "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?q=80&w=600&auto=format&fit=crop", 
+  "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=600&auto=format&fit=crop", 
+  "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=600&auto=format&fit=crop", 
+  "https://images.unsplash.com/photo-1534080564583-6be75777b70a?q=80&w=600&auto=format&fit=crop"
+];
+
 const data = {
   ko: {
     title: "상인이 고른 바다의 신선함,\n전문 셰프가 완성하는 미식.",
@@ -311,8 +319,9 @@ export default function Marketplace() {
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`px-5 py-2.5 rounded-full font-bold transition-all duration-300 transform ${isSelected ? 'bg-[#007db5] text-white shadow-lg -translate-y-1' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
+                className={`px-5 py-2.5 rounded-full font-bold transition-all duration-300 transform flex items-center gap-2 ${isSelected ? 'bg-blue-600 text-white shadow-xl scale-105 border-2 border-blue-400' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'}`}
               >
+                {isSelected && <span>✓</span>}
                 #{lang === 'en' && TAG_MAP[tag] ? TAG_MAP[tag] : tag}
               </button>
             );
@@ -331,10 +340,13 @@ export default function Marketplace() {
               <span>Gemini 추천: 당신을 위한 오늘의 맞춤식</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {ingredients.slice(0, 3).map((item) => (
+              {ingredients.slice(0, 3).map((item) => {
+                const fallbackImg = FALLBACK_IMAGES[(item.id?.charCodeAt(0) || 0) % FALLBACK_IMAGES.length];
+                const displayImg = item.imageUrl || fallbackImg;
+                return (
                 <div key={`gemini_${item.id}`} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center border border-yellow-200 hover:shadow-md transition-shadow cursor-pointer">
                   <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
-                    <img src={item.imageUrl || ''} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={displayImg} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-yellow-600 mb-1">매칭률 100%</div>
@@ -343,7 +355,7 @@ export default function Marketplace() {
                     </h3>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         </div>
@@ -376,50 +388,50 @@ export default function Marketplace() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {ingredients.map((item, index) => (
-              <div 
-                key={item.id} 
-                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 animate-fade-in group cursor-pointer"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {/* Image Section */}
-                <div className="relative h-60 bg-gray-100 overflow-hidden">
-                  {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg bg-gradient-to-br from-gray-100 to-gray-200">이미지 준비중</div>
-                  )}
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-black text-[#ff5722] shadow-sm">
-                    {item.category === 'General' ? (lang === 'ko' ? '당일 바리' : 'Fresh Catch') : item.category}
-                  </div>
-                </div>
-
-                {/* Text Section */}
-                <div className="p-6">
-                  {/* truncate 제거하여 긴 상품명도 온전히 보이게 수정 */}
-                  <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2 leading-snug">
-                    {lang === 'en' && item.name.includes('(') ? item.name.split('(')[1].replace(')', '') : item.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {(item.tags || []).map(tag => (
-                      <span key={tag} className="bg-blue-50 text-[#007db5] border border-blue-100 px-2.5 py-1 rounded-md text-xs font-bold">
-                        #{lang === 'en' && TAG_MAP[tag] ? TAG_MAP[tag] : tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-end border-t pt-4 border-gray-100">
-                    <div>
-                      <span className="block text-xs text-gray-400 font-bold mb-1">{content.merchantPrice}</span>
-                      <span className="text-2xl font-black text-gray-900">{content.currentPrice}</span>
+            <div key={selectedTags.join(',')} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in">
+              {ingredients.map((item, index) => {
+                const fallbackImg = FALLBACK_IMAGES[(item.id?.charCodeAt(0) || index) % FALLBACK_IMAGES.length];
+                const displayImg = item.imageUrl || fallbackImg;
+                
+                return (
+                  <div 
+                    key={item.id} 
+                    className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group cursor-pointer"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    {/* Image Section */}
+                    <div className="relative h-60 bg-gray-100 overflow-hidden">
+                      <img src={displayImg} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-black text-[#ff5722] shadow-sm">
+                        {item.category === 'General' ? (lang === 'ko' ? '당일 바리' : 'Fresh Catch') : item.category}
+                      </div>
                     </div>
-                    <button className="bg-gray-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-[#ff5722] transition-colors shadow-md">
-                      {content.reserveBtn}
-                    </button>
+
+                    {/* Text Section */}
+                    <div className="p-6">
+                      <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2 leading-snug">
+                        {lang === 'en' && item.name.includes('(') ? item.name.split('(')[1].replace(')', '') : item.name}
+                      </h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {(item.tags || []).map(tag => (
+                          <span key={tag} className="bg-blue-50 text-blue-600 border border-blue-100 px-2.5 py-1 rounded-md text-xs font-bold">
+                            #{lang === 'en' && TAG_MAP[tag] ? TAG_MAP[tag] : tag}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-end border-t pt-4 border-gray-100">
+                        <div>
+                          <span className="block text-xs text-gray-400 font-bold mb-1">{content.merchantPrice}</span>
+                          <span className="text-2xl font-black text-gray-900">{content.currentPrice}</span>
+                        </div>
+                        <button className="bg-gray-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-[#ff5722] transition-colors shadow-md">
+                          {content.reserveBtn}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
