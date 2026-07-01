@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { db } from '@/lib/db';
-import { collection, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import '../globals.css';
 
 const TAG_MAP = {
@@ -95,6 +95,8 @@ export default function Marketplace() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [userPreferencesLoaded, setUserPreferencesLoaded] = useState(false);
 
+  const autoSeedRan = useRef(false);
+
   // 유저의 기존 취향(Preferences) 실시간 연동 (Single Source of Truth)
   useEffect(() => {
     if (!user || !db) return;
@@ -110,10 +112,10 @@ export default function Marketplace() {
     return () => unsubscribe();
   }, [user]);
 
-  // 상품 목록 불러오기 및 가중치 매칭(Weight-based Matching) 정렬
+  // 상품 목록 불러오기 및 가중치 매칭(Weight-based Matching) 정렬 + Auto-Seeding
   useEffect(() => {
     if (!db) return;
-    const unsubscribe = onSnapshot(collection(db, 'ingredients'), (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, 'ingredients'), async (snapshot) => {
       const items = [];
       snapshot.forEach((doc) => {
         if (doc.data().stock !== false) {
@@ -121,20 +123,53 @@ export default function Marketplace() {
         }
       });
       
-      // 안티그래비티 린 알고리즘: 태그 일치도 기반 정렬
-      items.sort((a, b) => {
-        if (selectedTags.length > 0) {
+      // [Auto-Seeding 로직] DB가 텅 비어있을 경우에만 초기 데이터 8종 즉시 주입
+      if (items.length === 0 && !autoSeedRan.current) {
+        autoSeedRan.current = true;
+        console.log("DB가 비어있음을 감지했습니다. Auto-Seeding 엔진을 가동합니다.");
+        const seedItems = [
+          { name: "자연산 참돔 세트 (Wild Red Sea Bream Set)", category: "General", stock: true, tags: ["할랄", "부드러운 맛", "고급스러운"], imageUrl: "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?q=80&w=600&auto=format&fit=crop" },
+          { name: "산낙지 탕탕이 (Live Octopus Sashimi)", category: "General", stock: true, tags: ["이색체험", "날해산물", "건강식"], imageUrl: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?q=80&w=600&auto=format&fit=crop" },
+          { name: "프리미엄 킹크랩 (Premium King Crab)", category: "General", stock: true, tags: ["할랄", "부드러운 맛"], imageUrl: "https://plus.unsplash.com/premium_photo-1669222304899-738917830b56?q=80&w=600&auto=format&fit=crop" },
+          { name: "자갈치 특 붕장어 (Jagalchi Sea Eel)", category: "General", stock: true, tags: ["구이", "건강식"], imageUrl: "https://images.unsplash.com/photo-1522814041131-41e739ec1c7f?q=80&w=600&auto=format&fit=crop" },
+          { name: "해녀 채취 자연산 전복 (Wild Abalone)", category: "General", stock: true, tags: ["신선한 회(날것)", "건강식", "글루텐프리"], imageUrl: "https://images.unsplash.com/photo-1627918336338-348f5a3406f2?q=80&w=600&auto=format&fit=crop" },
+          { name: "완도산 넙치/광어 (Wando Flatfish)", category: "General", stock: true, tags: ["부드러운 맛", "신선한 회(날것)"], imageUrl: "https://images.unsplash.com/photo-1534080564583-6be75777b70a?q=80&w=600&auto=format&fit=crop" },
+          { name: "독도 새우 (Dokdo Shrimp)", category: "General", stock: true, tags: ["달콤한 맛", "신선한 회(날것)", "이색체험"], imageUrl: "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?q=80&w=600&auto=format&fit=crop" },
+          { name: "제주 은갈치 통마리 (Jeju Hairtail)", category: "General", stock: true, tags: ["구이", "매콤한 맛", "조림"], imageUrl: "https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?q=80&w=600&auto=format&fit=crop" }
+        ];
+        
+        try {
+          for (const item of seedItems) {
+            await addDoc(collection(db, 'ingredients'), { ...item, createdAt: serverTimestamp() });
+          }
+          console.log("Auto-Seeding 완료!");
+        } catch (e) {
+          console.error("Auto-Seeding 실패:", e);
+        }
+        return; // Auto-seeding 후 onSnapshot이 다시 트리거될 것이므로 여기서 리턴
+      }
+      
+      // 안티그래비티 린 알고리즘: 태그 필터링 및 가중치 정렬
+      let filteredItems = items;
+      if (selectedTags.length > 0) {
+        // 선택된 태그가 하나라도 포함된 상품만 필터링
+        filteredItems = items.filter(item => 
+          (item.tags || []).some(t => selectedTags.includes(t))
+        );
+        
+        filteredItems.sort((a, b) => {
           const aScore = (a.tags || []).filter(t => selectedTags.includes(t)).length;
           const bScore = (b.tags || []).filter(t => selectedTags.includes(t)).length;
           if (aScore !== bScore) {
             return bScore - aScore; // 점수가 높은 순(내림차순)
           }
-        }
-        // 점수가 같거나 선택된 태그가 없으면 최신순
-        return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
-      });
+          return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+        });
+      } else {
+        filteredItems.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+      }
       
-      setIngredients(items);
+      setIngredients(filteredItems);
     });
     return () => unsubscribe();
   }, [selectedTags]); // selectedTags가 바뀔 때마다 재정렬
@@ -178,8 +213,8 @@ export default function Marketplace() {
         <div className="text-2xl font-black tracking-tighter">자갈치 셰프</div>
         <div className="hidden md:flex gap-8 font-bold text-lg">
           <span className="cursor-pointer hover:opacity-80" onClick={() => alert(content.notReady)}>{content.topNavAbout}</span>
-          <span className="cursor-pointer hover:opacity-80" onClick={() => alert(content.notReady)}>{content.topNavBrands}</span>
-          <span className="cursor-pointer hover:opacity-80" onClick={() => alert(content.notReady)}>{content.nav1}</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => router.push('/brands')}>{content.topNavBrands}</span>
+          <span className="cursor-pointer hover:opacity-80" onClick={() => router.push('/programs')}>{content.nav1}</span>
           <span className="cursor-pointer hover:opacity-80" onClick={() => router.push('/community')}>{content.topNavCommunity}</span>
         </div>
         <div className="flex gap-4 items-center">
@@ -283,7 +318,36 @@ export default function Marketplace() {
             );
           })}
         </div>
+        </div>
       </div>
+
+      {/* [NEW] Gemini 추천: 당신을 위한 오늘의 맞춤식 */}
+      {selectedTags.length > 0 && ingredients.length > 0 && (
+        <div className="max-w-6xl mx-auto mt-8 px-6 animate-fade-in">
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-3xl p-8 relative overflow-hidden shadow-lg">
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 opacity-10 text-9xl">✨</div>
+            <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-6 flex items-center gap-3">
+              <span className="text-3xl">✨</span> 
+              <span>Gemini 추천: 당신을 위한 오늘의 맞춤식</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {ingredients.slice(0, 3).map((item) => (
+                <div key={`gemini_${item.id}`} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4 items-center border border-yellow-200 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
+                    <img src={item.imageUrl || ''} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-yellow-600 mb-1">매칭률 100%</div>
+                    <h3 className="font-bold text-gray-900 leading-snug line-clamp-2">
+                      {lang === 'en' && item.name.includes('(') ? item.name.split('(')[1].replace(')', '') : item.name}
+                    </h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 5. 2-Step Customer Journey (진정한 3자 중개) */}
       <div className="max-w-6xl mx-auto py-16 px-6">
@@ -298,8 +362,22 @@ export default function Marketplace() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {ingredients.map((item, index) => (
+          
+          {ingredients.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center animate-fade-in bg-gray-50 rounded-3xl border border-gray-100">
+              <div className="text-7xl mb-6 opacity-80">🎣</div>
+              <h3 className="text-2xl font-black text-gray-900 mb-2">조건에 맞는 해산물이 다 팔렸어요!</h3>
+              <p className="text-gray-500 font-medium mb-8">너무 인기가 많아 금세 소진되었네요. 다른 취향 태그를 선택해 보세요.</p>
+              <button 
+                onClick={() => setSelectedTags([])}
+                className="bg-[#007db5] text-white px-8 py-3 rounded-full font-bold hover:bg-[#005f8a] transition-colors shadow-md"
+              >
+                필터 초기화하기
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {ingredients.map((item, index) => (
               <div 
                 key={item.id} 
                 className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 animate-fade-in group cursor-pointer"
@@ -341,11 +419,12 @@ export default function Marketplace() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Step 2: 셰프 매칭 (Mock UI) */}
+        {/* Step 2: 셰프 매칭 (요리 방식 선택) */}
         <div className="relative">
           <div className="flex items-center gap-4 mb-8 border-b-2 border-[#007db5] pb-4">
             <div className="bg-[#007db5] text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black">2</div>
