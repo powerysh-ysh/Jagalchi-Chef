@@ -1,7 +1,10 @@
-import { getFirestore, collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { app } from './firebase';
 
-const db = getFirestore(app);
+// 클라우드 비용(읽기 횟수) 최소화를 위해 로컬 캐시(Offline Persistence) 강제 활성화
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 
 export { db };
 
