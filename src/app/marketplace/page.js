@@ -333,7 +333,6 @@ export default function Marketplace() {
             );
           })}
         </div>
-        </div>
       </div>
 
       {/* [NEW] Gemini 추천: 당신을 위한 오늘의 맞춤식 */}
