@@ -272,11 +272,12 @@ export default function AdminDashboard() {
           <button 
             onClick={handleSeedData}
             style={{
-              backgroundColor: '#4caf50', color: 'white', border: 'none', 
-              padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '1rem'
+              backgroundColor: '#ff5722', color: 'white', border: 'none', 
+              padding: '8px 16px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer', marginLeft: '1rem',
+              boxShadow: '0 4px 6px rgba(255,87,34,0.3)'
             }}
           >
-            🌱 더미 데이터 채우기
+            🚀 시연 모드 (Demo Mode)
           </button>
           
           <button 
@@ -357,7 +358,13 @@ export default function AdminDashboard() {
             
             <label className="bg-[#ff5722] text-white px-8 py-4 rounded-full font-bold cursor-pointer hover:bg-orange-600 transition-transform hover:scale-105 shadow-md flex items-center gap-2">
               {isUploadingImage ? (
-                <span>⏳ AI가 메뉴판을 분석 중입니다...</span>
+                <div className="flex items-center gap-3">
+                  <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>AI가 메뉴판을 정밀 분석하고 이미지를 매칭 중입니다...</span>
+                </div>
               ) : (
                 <>
                   <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m14-7-5-5-5 5m5-5v12"/></svg>
@@ -388,8 +395,16 @@ export default function AdminDashboard() {
                 onChange={(e) => setNewItemName(e.target.value)}
                 style={{ flex: 1, padding: '15px', borderRadius: '8px', border: '2px solid var(--border-color)', fontSize: '1.1rem' }}
               />
-              <button type="submit" className="bg-[#007db5] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#005f8a] transition-colors" disabled={isTranslating}>
-                {isTranslating ? '⏳ AI 찾는 중...' : '자동 생성'}
+              <button type="submit" className="bg-[#007db5] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#005f8a] transition-colors flex items-center justify-center gap-2 min-w-[140px]" disabled={isTranslating}>
+                {isTranslating ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>분석 중...</span>
+                  </>
+                ) : '자동 생성'}
               </button>
             </form>
           </div>

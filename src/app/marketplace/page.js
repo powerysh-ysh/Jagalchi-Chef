@@ -101,7 +101,9 @@ export default function Marketplace() {
   const { user, role, loading } = useAuth();
   const [ingredients, setIngredients] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [selectedIngredient, setSelectedIngredient] = useState(null);
   const [userPreferencesLoaded, setUserPreferencesLoaded] = useState(false);
+  const chefSectionRef = useRef(null);
 
   const autoSeedRan = useRef(false);
 
@@ -396,7 +398,13 @@ export default function Marketplace() {
                 return (
                   <div 
                     key={item.id} 
-                    className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group cursor-pointer"
+                    onClick={() => {
+                      setSelectedIngredient(item);
+                      if (chefSectionRef.current) {
+                        chefSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className={`bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 group cursor-pointer ${selectedIngredient?.id === item.id ? 'border-blue-500 ring-4 ring-blue-200 scale-[1.02]' : 'border-gray-200'}`}
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
                     {/* Image Section */}
@@ -405,6 +413,13 @@ export default function Marketplace() {
                       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-black text-[#ff5722] shadow-sm">
                         {item.category === 'General' ? (lang === 'ko' ? '당일 바리' : 'Fresh Catch') : item.category}
                       </div>
+                      {selectedIngredient?.id === item.id && (
+                        <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                          <div className="bg-blue-600 text-white rounded-full p-3 shadow-lg">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Text Section */}
@@ -424,8 +439,8 @@ export default function Marketplace() {
                           <span className="block text-xs text-gray-400 font-bold mb-1">{content.merchantPrice}</span>
                           <span className="text-2xl font-black text-gray-900">{content.currentPrice}</span>
                         </div>
-                        <button className="bg-gray-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-[#ff5722] transition-colors shadow-md">
-                          {content.reserveBtn}
+                        <button className={`${selectedIngredient?.id === item.id ? 'bg-blue-600' : 'bg-gray-900'} text-white px-5 py-2 rounded-lg font-bold hover:bg-[#ff5722] transition-colors shadow-md`}>
+                          {selectedIngredient?.id === item.id ? '선택됨' : content.reserveBtn}
                         </button>
                       </div>
                     </div>
@@ -437,23 +452,52 @@ export default function Marketplace() {
         </div>
 
         {/* Step 2: 셰프 매칭 (요리 방식 선택) */}
-        <div className="relative">
+        <div className="relative" ref={chefSectionRef}>
           <div className="flex items-center gap-4 mb-8 border-b-2 border-[#007db5] pb-4">
-            <div className="bg-[#007db5] text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black">2</div>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl font-black transition-colors ${selectedIngredient ? 'bg-[#007db5] text-white' : 'bg-gray-200 text-gray-400'}`}>2</div>
             <div>
-              <h2 className="text-3xl font-black text-[#007db5]">{content.step2Title}</h2>
+              <h2 className={`text-3xl font-black transition-colors ${selectedIngredient ? 'text-[#007db5]' : 'text-gray-400'}`}>{content.step2Title}</h2>
               <p className="text-gray-500 font-bold mt-1">{content.step2Desc}</p>
             </div>
           </div>
           
-          <div className="bg-white border-2 border-dashed border-[#007db5]/30 rounded-2xl p-10 text-center bg-blue-50/50">
-            <div className="text-5xl mb-4">👨‍🍳</div>
-            <h3 className="text-2xl font-black text-gray-800 mb-2">{content.step2Warning}</h3>
-            <p className="text-gray-600 font-semibold mb-6 whitespace-pre-line">{content.step2WarningDesc}</p>
-            <div className="inline-block border border-[#007db5] text-[#007db5] bg-white px-6 py-3 rounded-xl font-bold opacity-70">
-              [상인 원물 30,000원] + [셰프 조리비 15,000원] = 통합 결제 시스템 준비중
+          {!selectedIngredient ? (
+            <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-16 text-center animate-pulse">
+              <div className="text-5xl mb-4 opacity-50">👆</div>
+              <h3 className="text-xl font-bold text-gray-500">위에서 원하시는 해산물을 먼저 선택해주세요.</h3>
             </div>
-          </div>
+          ) : (
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-8 animate-fade-in shadow-inner">
+              <div className="mb-6 flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm">
+                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                  <img src={selectedIngredient.imageUrl || FALLBACK_IMAGES[0]} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <div className="text-sm text-[#007db5] font-bold">선택하신 해산물</div>
+                  <div className="text-xl font-black text-gray-900">{selectedIngredient.name.split('(')[0]}</div>
+                </div>
+              </div>
+              
+              <h3 className="text-2xl font-black text-gray-800 mb-6">이 재료를 요리할 최고의 셰프들</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { name: '김명인 셰프', desc: '30년 경력의 횟집 장인', style: '전통 활어회' },
+                  { name: '최스타 셰프', desc: '미슐랭 1스타 출신', style: '퓨전 해산물 코스' }
+                ].map((chef, idx) => (
+                  <div key={idx} className="bg-white p-6 rounded-xl border border-gray-200 hover:border-[#007db5] hover:shadow-md transition-all cursor-pointer flex justify-between items-center group">
+                    <div>
+                      <div className="text-xs font-bold text-gray-400 mb-1">{chef.style}</div>
+                      <div className="text-lg font-black text-gray-900">{chef.name}</div>
+                      <div className="text-sm text-gray-600">{chef.desc}</div>
+                    </div>
+                    <button className="bg-gray-100 text-gray-600 group-hover:bg-[#007db5] group-hover:text-white px-4 py-2 rounded-lg font-bold transition-colors">
+                      요리 의뢰
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

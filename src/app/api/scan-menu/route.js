@@ -133,11 +133,15 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('[Hyper-Automation] 치명적 오류:', error);
-    // 우아한 에러 핸들링: 시스템이 터지지 않고 자연스럽게 상인에게 알림
-    return NextResponse.json(
-      { error: '메뉴판을 분석하는 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.' },
-      { status: 500 }
-    );
+    console.error('[Hyper-Automation] 치명적 오류 발생(Fallback 가동):', error);
+    // 멘토 지시: 시연 현장 사고 방지를 위해 에러 시 기본 샘플 데이터 반환
+    return NextResponse.json({
+      success: true,
+      message: '시연 모드(Fallback) 데이터 반환',
+      items: [
+        { name: "자연산 모둠회 (Wild Assorted Sashimi)", category: "General", price: 50000, tags: ["신선한 회(날것)", "고급스러운"], imageUrl: FALLBACK_IMAGES[2] },
+        { name: "해물파전 (Seafood Pancake)", category: "General", price: 15000, tags: ["전통체험", "부드러운 맛"], imageUrl: FALLBACK_IMAGES[0] }
+      ]
+    });
   }
 }
