@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '../globals.css';
 
 export default function BrandsPage() {
   const router = useRouter();
+  const [selectedBrand, setSelectedBrand] = useState(null);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col relative">
@@ -93,8 +95,8 @@ export default function BrandsPage() {
                 <p className="text-gray-600 leading-relaxed mb-6 flex-1">{brand.desc}</p>
                 <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
                   <span className="text-sm font-bold text-gray-400">자갈치 셰프 파트너</span>
-                  <button className="text-[#007db5] font-black hover:text-[#005f8a] transition-colors flex items-center gap-1">
-                    스토리 보기 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  <button onClick={() => setSelectedBrand(brand)} className="text-[#007db5] font-black hover:text-[#005f8a] transition-colors flex items-center gap-1">
+                    읽기 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                   </button>
                 </div>
               </div>
@@ -102,6 +104,39 @@ export default function BrandsPage() {
           ))}
         </div>
       </div>
+
+      {/* 모달 창 */}
+      {selectedBrand && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl animate-fade-in relative flex flex-col max-h-[90vh]">
+            <button 
+              onClick={() => setSelectedBrand(null)}
+              className="absolute top-4 right-4 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70 z-10"
+            >
+              ✕
+            </button>
+            <div className="h-64 relative shrink-0">
+              <img src={selectedBrand.img} alt={selectedBrand.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
+                <h3 className="text-3xl font-black text-white">{selectedBrand.title}</h3>
+              </div>
+            </div>
+            <div className="p-8 overflow-y-auto">
+              <div className="text-sm font-bold text-[#ff5722] mb-4">{selectedBrand.subtitle}</div>
+              <p className="text-gray-700 leading-relaxed mb-6 text-lg">"{selectedBrand.desc}"</p>
+              
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                <h4 className="font-bold text-gray-900 mb-2">셰프/상인의 철학</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  자갈치 시장에서 30년간 자리를 지켜온 장인들의 숨결과, 미슐랭 스타 레스토랑 출신 셰프들의 혁신이 만나 전에 없던 미식 경험을 제공합니다. 
+                  우리는 신선한 재료가 가진 본연의 맛을 극대화하며, 고객 여러분께 바다의 생명력을 그대로 전달하는 것을 최우선으로 생각합니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

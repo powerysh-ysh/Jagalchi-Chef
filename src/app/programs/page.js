@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '../globals.css';
 
 export default function ProgramsPage() {
   const router = useRouter();
+  const [selectedProgram, setSelectedProgram] = useState(null);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col relative">
@@ -90,13 +92,48 @@ export default function ProgramsPage() {
                 <p className="text-gray-600 mb-6 min-h-[80px]">{program.desc}</p>
                 <div className="flex justify-between items-center border-t border-gray-100 pt-6">
                   <div className="text-2xl font-black text-[#ff5722]">{program.price}</div>
-                  <button className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-[#007db5] transition-colors">예약하기</button>
+                  <button onClick={() => setSelectedProgram(program)} className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-[#007db5] transition-colors">예약하기</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* 모달 창 */}
+      {selectedProgram && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-fade-in relative">
+            <button 
+              onClick={() => setSelectedProgram(null)}
+              className="absolute top-4 right-4 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/70 z-10"
+            >
+              ✕
+            </button>
+            <div className="h-48 relative">
+              <img src={selectedProgram.img} alt={selectedProgram.title} className="w-full h-full object-cover" />
+            </div>
+            <div className="p-8">
+              <h3 className="text-2xl font-black text-gray-900 mb-2">{selectedProgram.title}</h3>
+              <p className="text-gray-600 mb-6">{selectedProgram.desc}</p>
+              <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl mb-6 border border-gray-100">
+                <span className="font-bold text-gray-600">총 결제 금액</span>
+                <span className="text-2xl font-black text-[#ff5722]">{selectedProgram.price}</span>
+              </div>
+              <button 
+                onClick={() => {
+                  alert('예약이 성공적으로 완료되었습니다! 카카오톡으로 안내 메시지가 발송됩니다.');
+                  setSelectedProgram(null);
+                }}
+                className="w-full bg-[#007db5] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#005f8a] transition-colors shadow-lg"
+              >
+                결제 및 예약 확정하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
